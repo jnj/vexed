@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     Apr 8, 2009 3:13:15 AM                                                        
+
+     vexed    
+     solver for simple version of the vexed game
+                   
+     jnjoyce                                                                
+     ====================================================================== -->
+<project name="vexed" default="test">
+  <description>
+            solver for simple version of the vexed game
+    </description>
+
+  <property name="src.dir" value="${basedir}/src" />
+  <property name="bin.dir" value="${basedir}/bin" />
+  <property name="test.src.dir" value="${basedir}/test/src" />
+  <property name="test.bin.dir" value="${basedir}/test/bin" />
+  <property name="doc.dir" value="${basedir}/doc" />
+
+  <!-- ================================= 
+          target: test              
+         ================================= -->
+  <target name="test"
+          depends="compile-tests"
+          description="--> solver for simple version of the vexed game">
+    <junit printsummary="yes">
+      <classpath>
+        <pathelement location="${test.bin.dir}" />
+        <pathelement location="${bin.dir}" />
+      </classpath>
+      <batchtest haltonfailure="yes" haltonerror="yes">
+        <fileset dir="${test.src.dir}">
+          <include name="**/*Test.java" />
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+  <!-- - - - - - - - - - - - - - - - - - 
+          target: compile                      
+         - - - - - - - - - - - - - - - - - -->
+  <target name="compile">
+    <mkdir dir="${bin.dir}" />
+    <javac srcdir="${src.dir}" destdir="${bin.dir}" debug="on" />
+  </target>
+
+  <target name="compile-tests" depends="compile">
+    <mkdir dir="${test.bin.dir}" />
+    <javac srcdir="${test.src.dir}"
+           destdir="${test.bin.dir}"
+           classpath="${bin.dir}"
+           debug="on" />
+  </target>
+
+  <!-- - - - - - - - - - - - - - - - - - 
+          target: clean                      
+         - - - - - - - - - - - - - - - - - -->
+  <target name="clean">
+    <delete>
+      <fileset dir="${bin.dir}">
+        <include name="**/*.class" />
+      </fileset>
+      <fileset dir="${test.bin.dir}">
+        <include name="**/*.class" />
+      </fileset>
+    </delete>
+  </target>
+
+  <!-- - - - - - - - - - - - - - - - - - 
+          target: doc                      
+         - - - - - - - - - - - - - - - - - -->
+  <target name="doc" description="builds javadoc">
+    <javadoc destdir="${doc.dir}">
+      <sourcepath location="${src.dir}" />
+    </javadoc>
+  </target>
+
+</project>

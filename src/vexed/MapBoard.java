@@ -74,7 +74,7 @@ public class MapBoard implements Board {
 
     private boolean movePossible(Move move) {
         return withinBoardBounds(move.getPosition()) && moveableBlockAt(move.getPosition())
-            && canPutBlockAt(move.getTargetPosition());
+                        && canPutBlockAt(move.getTargetPosition());
     }
 
     private void doRecordedMove(Move move) {
