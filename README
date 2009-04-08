@@ -1,0 +1,4 @@
+This is a solver for a simple version of the game Vexed.  The input is
+a textual representation of the game board.  The solver will solve it
+(if possible) and report the moves that result in the smallest path to
+a solution.
