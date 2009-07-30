@@ -1,14 +1,13 @@
 package vexed;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Solves using breadth-first search.
  */
 public class BfsSolver implements Solver {
 
-    private Queue<Board> _queue = new LinkedBlockingQueue<Board>();
+    private Queue<Board> _queue = new LinkedList<Board>();
     private Set<Board> _seenBoards = Containers.newHashSet(); 
     
     public Solution solve(Board initialBoard) {
