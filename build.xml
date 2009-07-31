@@ -13,6 +13,7 @@
     </description>
 
   <property name="src.dir" value="${basedir}/src" />
+  <property name="lib.dir" value="#{basedir}/lib" />
   <property name="bin.dir" value="${basedir}/bin" />
   <property name="test.src.dir" value="${basedir}/test/src" />
   <property name="test.bin.dir" value="${basedir}/test/bin" />
@@ -28,6 +29,7 @@
       <classpath>
         <pathelement location="${test.bin.dir}" />
         <pathelement location="${bin.dir}" />
+        <pathelement location="${lib.dir}/junit-4.6.jar"/>
       </classpath>
       <batchtest haltonfailure="yes" haltonerror="yes">
         <fileset dir="${test.src.dir}">
@@ -49,8 +51,12 @@
     <mkdir dir="${test.bin.dir}" />
     <javac srcdir="${test.src.dir}"
            destdir="${test.bin.dir}"
-           classpath="${bin.dir}"
-           debug="on" />
+           debug="on">
+      <classpath>
+        <pathelement location="${bin.dir}"/>
+        <pathelement location="${lib.dir}/junit-4.6.jar"/>
+      </classpath>
+    </javac>
   </target>
 
   <!-- - - - - - - - - - - - - - - - - - 
