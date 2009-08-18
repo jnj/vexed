@@ -19,9 +19,7 @@ public class BfsSolver implements Solver {
             if (board.isSolved()) {
                 return new Solution(board.getMoveHistory(), countSeenBoards());
             } else {
-                if (alreadySaw(board)) {
-                    continue;
-                } else {
+                if (!alreadySaw(board)) {
                     explore(board);
                 }
             }

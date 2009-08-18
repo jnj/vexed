@@ -4,15 +4,16 @@ public class Vexed {
 
 	public static void main(String[] args) {		
 		Solver solver = new BfsSolver();
-		
+		PositionSupplier positionSupplier = new CachingPositionSupplier();
+
 		String boardDesc = "#A   #\n" +
 						   "#B   #\n" +
 						   "#A   #\n" +
 						   "##   #\n" +
 						   "#B   #\n" +
 						   "######";
-		Board board = MapBoard.fromString(boardDesc);
-		solver.solve(board);
+		Board board = MapBoard.fromString(boardDesc, positionSupplier);
+        System.out.println(solver.solve(board));
 	}
 
 }

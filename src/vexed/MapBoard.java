@@ -8,14 +8,12 @@ import java.util.*;
 public class MapBoard implements Board {
 
     private final Map<Position, Block> _contents = newHashMap();
-
     private final MoveHistory _moveHistory = new MoveHistory();
-
     private final int _width;
-
     private final int _height;
+    private final PositionSupplier _positionSupplier;
 
-    public static MapBoard fromString(String layoutText) {
+    public static MapBoard fromString(String layoutText, PositionSupplier positionSupplier) {
         String[] lines = layoutText.split("\n");
         int height = lines.length;
         int width = lines[0].length();
@@ -26,20 +24,21 @@ public class MapBoard implements Board {
             for (int column = 0; column < lines[row].length(); column++) {
                 char symbol = lines[row].charAt(column);
                 if (symbol != '.' && symbol != ' ')
-                    layout.put(new Position(column, row), new Block(symbol));
+                    layout.put(positionSupplier.getPosition(row, column), new Block(symbol));
             }
 
-        return new MapBoard(width, height, layout);
+        return new MapBoard(width, height, layout, positionSupplier);
     }
 
-    public MapBoard(int width, int height, Map<Position, Block> configuration) {
+    public MapBoard(int width, int height, Map<Position, Block> configuration, PositionSupplier positionSupplier) {
         _width = width;
         _height = height;
         _contents.putAll(configuration);
+        _positionSupplier = positionSupplier;
     }
 
     private MapBoard(MapBoard board) {
-        this(board._width, board._height, board._contents);
+        this(board._width, board._height, board._contents, board._positionSupplier);
         _moveHistory.addAll(board._moveHistory);
     }
 
@@ -74,7 +73,7 @@ public class MapBoard implements Board {
 
     private boolean movePossible(Move move) {
         return withinBoardBounds(move.getPosition()) && moveableBlockAt(move.getPosition())
-                        && canPutBlockAt(move.getTargetPosition());
+                && canPutBlockAt(move.getTargetPosition());
     }
 
     private void doRecordedMove(Move move) {
@@ -127,7 +126,7 @@ public class MapBoard implements Board {
 
     private Collection<Position> findBlockGroups() {
         GroupContainer groups = new GroupContainer();
-        Direction[] directionsToLook = new Direction[] { Down, Right };
+        Direction[] directionsToLook = new Direction[]{Down, Right};
 
         for (Position position : getPositionsFromBottomUp()) {
             if (!moveableBlockAt(position))
@@ -148,7 +147,7 @@ public class MapBoard implements Board {
 
     public Collection<Move> getAvailableMoves() {
         Collection<Move> moves = new HashSet<Move>();
-        Direction[] directions = new Direction[] { Left, Right };
+        Direction[] directions = new Direction[]{Left, Right};
 
         for (Position position : getOccupiedPositions())
             for (Direction direction : directions)
@@ -173,7 +172,7 @@ public class MapBoard implements Board {
 
         for (int row = _height - 1; row >= 0; row--)
             for (int column = _width - 1; column >= 0; column--)
-                positions.add(new Position(column, row));
+                positions.add(_positionSupplier.getPosition(row, column));
 
         return positions;
     }
@@ -188,12 +187,12 @@ public class MapBoard implements Board {
 
     private boolean withinBoardBounds(Position position) {
         return position.getColumn() >= 0 && position.getColumn() < _width && position.getRow() >= 0
-                        && position.getRow() < _height;
+                && position.getRow() < _height;
     }
 
     private boolean equalBlocksAt(Position first, Position second) {
         return _contents.containsKey(first) && _contents.containsKey(second)
-                        && _contents.get(first).equals(_contents.get(second));
+                && _contents.get(first).equals(_contents.get(second));
     }
 
     private boolean isOccupied(Position position) {
@@ -205,7 +204,7 @@ public class MapBoard implements Board {
     }
 
     private Iterable<Position> positions() {
-        return new PositionSequence(_width, _height);
+        return new PositionSequence(_width, _height, _positionSupplier);
     }
 
     @Override
@@ -285,7 +284,7 @@ public class MapBoard implements Board {
             _positionsMappedToGroups.put(position, group);
 
             if (!_groupsMappedToPositions.containsKey(group)) {
-                _groupsMappedToPositions.put(group, Containers.<Position> newHashSet());
+                _groupsMappedToPositions.put(group, Containers.<Position>newHashSet());
             }
 
             _groupsMappedToPositions.get(group).add(position);
@@ -304,12 +303,13 @@ public class MapBoard implements Board {
 
     private static class PositionSequence implements Iterable<Position> {
         private final int _width;
-
         private final int _height;
+        private final PositionSupplier _positionSupplier;
 
-        public PositionSequence(int width, int height) {
+        public PositionSequence(int width, int height, PositionSupplier positionSupplier) {
             _width = width;
             _height = height;
+            _positionSupplier = positionSupplier;
         }
 
         public Iterator<Position> iterator() {
@@ -319,7 +319,7 @@ public class MapBoard implements Board {
                 int column;
 
                 public Position next() {
-                    Position position = new Position(column, row);
+                    Position position = _positionSupplier.getPosition(row, column);
 
                     if (column == _width - 1) {
                         column = 0;
@@ -374,9 +374,9 @@ public class MapBoard implements Board {
                 addWall();
         }
 
-        public MapBoard build() {
+        public MapBoard build(PositionSupplier positionSupplier) {
             addBottomWall();
-            return MapBoard.fromString(_layoutBuilder.toString());
+            return MapBoard.fromString(_layoutBuilder.toString(), positionSupplier);
         }
     }
 }

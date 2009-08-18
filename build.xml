@@ -13,7 +13,7 @@
     </description>
 
   <property name="src.dir" value="${basedir}/src" />
-  <property name="lib.dir" value="#{basedir}/lib" />
+  <property name="lib.dir" value="${basedir}/lib" />
   <property name="bin.dir" value="${basedir}/bin" />
   <property name="test.src.dir" value="${basedir}/test/src" />
   <property name="test.bin.dir" value="${basedir}/test/bin" />
@@ -24,7 +24,7 @@
          ================================= -->
   <target name="test"
           depends="compile-tests"
-          description="--> solver for simple version of the vexed game">
+          description="solver for vexed">
     <junit printsummary="yes">
       <classpath>
         <pathelement location="${test.bin.dir}" />
