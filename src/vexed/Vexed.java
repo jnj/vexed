@@ -3,7 +3,7 @@ package vexed;
 public class Vexed {
 
 	public static void main(String[] args) {		
-		Solver solver = new BfsSolver();
+		Solver solver = new ConcurrentSolver();
 		PositionSupplier positionSupplier = new CachingPositionSupplier();
 
 		String boardDesc = "#A   #\n" +
