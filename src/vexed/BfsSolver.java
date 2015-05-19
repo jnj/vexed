@@ -7,8 +7,8 @@ import java.util.*;
  */
 public class BfsSolver implements Solver {
 
-    private Queue<Board> _queue = new LinkedList<Board>();
-    private Set<Board> _seenBoards = Containers.newHashSet(); 
+    private Queue<Board> _queue = new LinkedList<>();
+    private Set<Board> _seenBoards = new HashSet<>();
     
     public Solution solve(Board initialBoard) {
         push(initialBoard);

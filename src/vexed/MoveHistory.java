@@ -1,6 +1,7 @@
 package vexed;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MoveHistory {
@@ -8,7 +9,7 @@ public class MoveHistory {
     private final List<Move> _moves;
 
     public MoveHistory() {
-        _moves = Containers.newLinkedList();
+        _moves = new LinkedList<>();
     }
 
     public MoveHistory(MoveHistory moveHistory) {

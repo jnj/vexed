@@ -16,10 +16,6 @@ public class Move {
 	public Position getTargetPosition() {
 		return _position.getNeighborTo(_direction);
 	}
-	
-	public Direction getDirection() {
-		return _direction;
-	}
 
 	public Position getPosition() {
 		return _position;
@@ -47,13 +43,6 @@ public class Move {
 	
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("[");
-		builder.append(_position);
-		builder.append(", ");
-		builder.append(_direction);
-		builder.append("]");
-		return builder.toString();
+        return "[" + _position + ", " + _direction + "]";
 	}
-	
 }

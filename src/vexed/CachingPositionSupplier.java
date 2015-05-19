@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class CachingPositionSupplier implements PositionSupplier {
 
-    private final Map<Integer, Map<Integer, Position>> _cache = new HashMap<Integer, Map<Integer, Position>>();
+    private final Map<Integer, Map<Integer, Position>> _cache = new HashMap<>();
 
     @Override
     public Position getPosition(int row, int col) {
@@ -17,7 +17,7 @@ public class CachingPositionSupplier implements PositionSupplier {
     }
 
     private Position addSubCache(int row, int col) {
-        Map<Integer, Position> subCache = new HashMap<Integer, Position>();
+        Map<Integer, Position> subCache = new HashMap<>();
         Position position = new Position(col, row);
         subCache.put(col, position);
         _cache.put(row, subCache);

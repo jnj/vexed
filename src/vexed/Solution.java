@@ -14,15 +14,8 @@ public class Solution {
         return _moveHistory;
     }
 
-    public int getNumBoards() {
-        return _numBoards;
-    }
-
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Winning moves: ").append(_moveHistory);
-        builder.append("\nnumber of boards: ").append(_numBoards);
-        return builder.toString();
+        return "Winning moves: " + _moveHistory + "\nnumber of boards: " + _numBoards;
     }   
 }

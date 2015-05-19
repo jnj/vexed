@@ -2,12 +2,13 @@ package vexed;
 
 import java.util.concurrent.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ConcurrentSolver implements Solver {
 
     private final ExecutorService _executorService = Executors.newFixedThreadPool(64);
-    private final Queue<Collection<Board>> _queue = new LinkedBlockingQueue<Collection<Board>>();
-    private final Set<Board> _seenBoards = Collections.synchronizedSet(new HashSet<Board>()); 
+    private final Queue<Collection<Board>> _queue = new LinkedBlockingQueue<>();
+    private final Set<Board> _seenBoards = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public Solution solve(Board rootBoard) throws UnsolveableBoardException {
@@ -15,7 +16,7 @@ public class ConcurrentSolver implements Solver {
 
         while (!_queue.isEmpty()) {
             Collection<Board> explorationLevel = _queue.poll();
-            Collection<Future<Collection<Board>>> futures = new ArrayList<Future<Collection<Board>>>();
+            Collection<Future<Collection<Board>>> futures = new ArrayList<>();
             
             for (Board board : explorationLevel) {
                 if (board.isSolved()) {
@@ -40,13 +41,11 @@ public class ConcurrentSolver implements Solver {
 
     private Collection<Board> mergeResultingBoards(Collection<Future<Collection<Board>>> futures) {
         // merge results
-        Collection<Board> nextLevel = new ArrayList<Board>();
+        Collection<Board> nextLevel = new ArrayList<>();
         for (Future<Collection<Board>> future : futures) {
             try {
                 nextLevel.addAll(future.get());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -64,15 +63,8 @@ public class ConcurrentSolver implements Solver {
         }
 
         @Override
-        public Collection<Board> call() throws Exception {            
-            Collection<Move> moves = parentBoard.getAvailableMoves();
-            Collection<Board> boards = new ArrayList<Board>();
-
-            for (Move move : moves) {
-                boards.add(parentBoard.apply(move));
-            }
-
-            return boards;
+        public Collection<Board> call() throws Exception {
+            return parentBoard.getAvailableMoves().stream().map(parentBoard::apply).collect(Collectors.toList());
         }
     }
 }

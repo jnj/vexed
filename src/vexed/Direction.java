@@ -24,7 +24,6 @@ public enum Direction {
 
     @Override
     public String toString() {
-        // TODO add String code
         switch (this) {
         case Left:
             return "L";

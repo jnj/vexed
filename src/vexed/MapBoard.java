@@ -1,13 +1,13 @@
 package vexed;
 
 import static vexed.Direction.*;
-import static vexed.Containers.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapBoard implements Board {
 
-    private final Map<Position, Block> _contents = newHashMap();
+    private final Map<Position, Block> _contents = new HashMap<>();
     private final MoveHistory _moveHistory = new MoveHistory();
     private final int _width;
     private final int _height;
@@ -18,7 +18,7 @@ public class MapBoard implements Board {
         int height = lines.length;
         int width = lines[0].length();
 
-        Map<Position, Block> layout = newHashMap();
+        Map<Position, Block> layout = new HashMap<>();
 
         for (int row = 0; row < lines.length; row++)
             for (int column = 0; column < lines[row].length(); column++) {
@@ -146,7 +146,7 @@ public class MapBoard implements Board {
     }
 
     public Collection<Move> getAvailableMoves() {
-        Collection<Move> moves = new HashSet<Move>();
+        Collection<Move> moves = new HashSet<>();
         Direction[] directions = new Direction[]{Left, Right};
 
         for (Position position : getOccupiedPositions())
@@ -158,17 +158,13 @@ public class MapBoard implements Board {
     }
 
     private Collection<Position> getOccupiedPositions() {
-        Collection<Position> positions = new LinkedList<Position>();
-
-        for (Position position : getPositionsFromBottomUp())
-            if (moveableBlockAt(position))
-                positions.add(position);
-
-        return positions;
+        return getPositionsFromBottomUp().stream()
+                .filter(this::moveableBlockAt)
+                .collect(Collectors.toList());
     }
 
     private List<Position> getPositionsFromBottomUp() {
-        List<Position> positions = new ArrayList<Position>(_width * _height);
+        List<Position> positions = new ArrayList<>(_width * _height);
 
         for (int row = _height - 1; row >= 0; row--)
             for (int column = _width - 1; column >= 0; column--)
@@ -264,9 +260,9 @@ public class MapBoard implements Board {
     private static class GroupContainer {
         Integer currentGroup = 0;
 
-        Map<Position, Integer> _positionsMappedToGroups = newHashMap();
+        Map<Position, Integer> _positionsMappedToGroups = new HashMap<>();
 
-        Map<Integer, Collection<Position>> _groupsMappedToPositions = newHashMap();
+        Map<Integer, Collection<Position>> _groupsMappedToPositions = new HashMap<>();
 
         Integer getNextAvailableGroup() {
             return ++currentGroup;
@@ -284,14 +280,14 @@ public class MapBoard implements Board {
             _positionsMappedToGroups.put(position, group);
 
             if (!_groupsMappedToPositions.containsKey(group)) {
-                _groupsMappedToPositions.put(group, Containers.<Position>newHashSet());
+                _groupsMappedToPositions.put(group, new HashSet<>());
             }
 
             _groupsMappedToPositions.get(group).add(position);
         }
 
         Collection<Position> getMembersOfNonSingletonGroups() {
-            Collection<Position> positions = newHashSet();
+            Collection<Position> positions = new HashSet<>();
 
             for (Collection<Position> group : _groupsMappedToPositions.values())
                 if (group.size() > 1)
