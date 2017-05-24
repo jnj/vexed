@@ -1,9 +1,10 @@
 package vexed;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
 
 public class TestSupport {
 
@@ -11,8 +12,8 @@ public class TestSupport {
      * Asserts that two collections have the same elements, ignoring order.
      */
     public static void assertEqualContents(Collection<?> expected, Collection<?> provided) {
-        Set<Object> firstSet = Containers.newHashSet(expected);
-        Set<Object> secondSet = Containers.newHashSet(provided);
-        Assert.assertEquals(firstSet, secondSet);
+        Set<?> firstSet = new HashSet<>(expected);
+        Set<?> secondSet = new HashSet<>(provided);
+        assertEquals(firstSet, secondSet);
     }
 }

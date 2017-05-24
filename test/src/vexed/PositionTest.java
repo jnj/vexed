@@ -1,13 +1,17 @@
 package vexed;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class PositionTest extends TestCase {
+import static org.junit.Assert.assertEquals;
 
+public class PositionTest {
+
+	@Test
 	public void testPositionsWithSameCoordsAreEqual() {
 		assertEquals(new Position(1, 2), new Position(1, 2));
 	}
-	
+
+	@Test
 	public void testEqualPositionsHaveEqualHashCodes() {		
 		Position position1 = new Position(1, 2);
 		Position position2 = new Position(1, 2);

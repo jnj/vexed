@@ -1,18 +1,21 @@
 package vexed;
 
+import static org.junit.Assert.*;
 import static vexed.Direction.Left;
 import static vexed.Direction.Right;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class MapBoardTest extends TestCase {
+public class MapBoardTest {
 
     private final PositionSupplier positionSupplier = new CachingPositionSupplier();
 
+	@Test
     public void testMapBuilder() {
         MapBoard.Builder builder = new MapBoard.Builder(4);
         builder.addInteriorRow(" A  ");
@@ -22,7 +25,8 @@ public class MapBoardTest extends TestCase {
         assertEquals(6, board.getWidth());
         assertEquals(4, board.getHeight());
     }
-    
+
+	@Test
     public void testGetAvailableMovesReturnsAllAvailableMoves() {
         MapBoard.Builder builder = new MapBoard.Builder(4);
         builder.addInteriorRow(" A  ");
@@ -35,32 +39,36 @@ public class MapBoardTest extends TestCase {
                                                        new Move(1, 2, Right));
         TestSupport.assertEqualContents(expectedMoves, board.getAvailableMoves());       
     }
-    
+
+	@Test
 	public void testEmptyBoardsWithEqualDimensionsAreEqual() {
-		Map<Position, Block> layout = Containers.newHashMap();
+		Map<Position, Block> layout = new HashMap<>();
 		MapBoard firstBoard = new MapBoard(1, 1, layout, positionSupplier);
 		MapBoard secondBoard = new MapBoard(1, 1, layout, positionSupplier);
 		assertEquals(firstBoard, secondBoard);
 	}
-	
+
+	@Test
 	public void testBoardsWithDifferentDimensionsAreUnequal() {
-		Map<Position, Block> layout = Containers.newHashMap();
+		Map<Position, Block> layout = new HashMap<>();
 		MapBoard firstBoard = new MapBoard(5, 2, layout, positionSupplier);
 		MapBoard secondBoard = new MapBoard(5, 3, layout, positionSupplier);
 		assertFalse(firstBoard.equals(secondBoard));
 	}
-	
+
+	@Test
 	public void testBoardsWithSameDimensionsAndContentsAreEqual() {
-		Map<Position, Block> layout = Containers.newHashMap();
+		Map<Position, Block> layout = new HashMap<>();
 		layout.put(new Position(0, 0), Block.wall());
 		layout.put(new Position(1, 2), new Block('A'));
 		MapBoard firstBoard = new MapBoard(4, 4, layout, positionSupplier);
 		MapBoard secondBoard = new MapBoard(4, 4, layout, positionSupplier);
 		assertEquals(firstBoard, secondBoard);
 	}
-	
+
+	@Test
 	public void testGetBlockAt() {
-		Map<Position, Block> layout = Containers.newHashMap();
+		Map<Position, Block> layout = new HashMap<>();
 		Block block = Block.wall();
 		Position position = new Position(1, 3);
 		layout.put(position, block);		
@@ -68,7 +76,8 @@ public class MapBoardTest extends TestCase {
 		assertEquals(block, board.getBlockAt(position));
 		assertNull(board.getBlockAt(new Position(0, 1)));
 	}
-	
+
+	@Test
 	public void testApplyMoveWillNotMakeImpossibleMove() {
 		MapBoard board = MapBoard.fromString("#A#", positionSupplier);
 		
@@ -84,7 +93,8 @@ public class MapBoardTest extends TestCase {
 		} catch (IllegalMoveException e) {			
 		}
 	}
-	
+
+	@Test
     public void testApplyMoveRecordsMoveInHistory() {
         String layout = "#A #\n" +
                         "####";
@@ -94,11 +104,13 @@ public class MapBoardTest extends TestCase {
         assertEquals(1, newBoard.getMoveHistory().size());
         assertEquals(Arrays.asList(move), newBoard.getMoveHistory().getMoves());
     }
-    
+
+    @Test
 	public void testApplyMoveCanMakeSimpleMove() {
 		assertMoveResult("#A #", "# A#", new Move(1, 0, Right));
 	}
-	
+
+	@Test
 	public void testApplyMoveCanMakeMoveWithFalling() {
 		String layoutText = 
 			"#A #\n" +
@@ -112,7 +124,8 @@ public class MapBoardTest extends TestCase {
 		
 		assertMoveResult(layoutText, expectedLayoutText, new Move(1, 0, Right));
 	}
-	
+
+	@Test
     public void testApplyMoveWithDifferentBlocks() {
         MapBoard.Builder boardBuilder = new MapBoard.Builder(5);
         boardBuilder.addInteriorRow(" BA  ");
@@ -129,7 +142,8 @@ public class MapBoardTest extends TestCase {
         
         assertEquals(expectedBoard, newBoard);
     }
-    
+
+	@Test
     public void testMoveHistoryRetainsMoves() {
         MapBoard.Builder boardBuilder = new MapBoard.Builder(5);
         boardBuilder.addInteriorRow(" BA  ");
@@ -146,7 +160,8 @@ public class MapBoardTest extends TestCase {
         assertEquals(Arrays.asList(firstMove, secondMove), 
                      secondBoard.getMoveHistory().getMoves());
     }
-    
+
+	@Test
 	public void testApplyMoveWithVanishingBlocks() {
 		String layoutText = 
 			"#B   #\n" +
@@ -164,6 +179,7 @@ public class MapBoardTest extends TestCase {
 		assertMoveResult(layoutText, expectedLayoutText, new Move(1, 1, Right));		
 	}
 
+	@Test
 	public void testFromString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("#...#\n");
@@ -172,7 +188,7 @@ public class MapBoardTest extends TestCase {
 		builder.append("#####");
 		MapBoard boardFromString = MapBoard.fromString(builder.toString(), positionSupplier);
 		
-		Map<Position, Block> layout = Containers.newHashMap();
+		Map<Position, Block> layout = new HashMap<>();
 		layout.put(new Position(0, 0), Block.wall());
 		layout.put(new Position(4, 0), Block.wall());
 		layout.put(new Position(0, 1), Block.wall());
@@ -192,7 +208,8 @@ public class MapBoardTest extends TestCase {
 		MapBoard expectedBoard = new MapBoard(5, 4, layout, positionSupplier);
 		assertEquals(expectedBoard, boardFromString);
 	}
-	
+
+	@Test
 	public void testIsSolved() {
 		assertFalse(MapBoard.fromString("#A#", positionSupplier).isSolved());
 		assertTrue(MapBoard.fromString("# #", positionSupplier).isSolved());		

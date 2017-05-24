@@ -1,13 +1,18 @@
 package vexed;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class BlockTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+public class BlockTest {
+
+    @Test
     public void testIsWall() {
         assertTrue(new Block(Block.WALL_SYMBOL).isWall());
     }
 
+    @Test
     public void testSameSymbolsImplyEqualBlocks() {
         char symbol = 'A';
         Block a = new Block(symbol);
@@ -15,6 +20,7 @@ public class BlockTest extends TestCase {
         assertEquals(a, b);
     }
 
+    @Test
     public void testEqualBlocksHaveEqualHashCodes() {
         char symbol = 'A';
         Block a = new Block(symbol);
