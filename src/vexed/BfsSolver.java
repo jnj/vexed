@@ -1,6 +1,9 @@
 package vexed;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * Solves using breadth-first search.
@@ -9,7 +12,7 @@ public class BfsSolver implements Solver {
 
     private Queue<Board> _queue = new LinkedList<>();
     private Set<Board> _seenBoards = new HashSet<>();
-    
+
     public Solution solve(Board initialBoard) {
         push(initialBoard);
 
@@ -27,11 +30,11 @@ public class BfsSolver implements Solver {
 
         throw new UnsolveableBoardException("cannot solve board");
     }
-    
+
     private int countSeenBoards() {
         return _seenBoards.size();
     }
-    
+
     private void explore(Board board) {
         _seenBoards.add(board);
         for (Move move : board.getAvailableMoves()) {
@@ -39,15 +42,15 @@ public class BfsSolver implements Solver {
             push(newBoard);
         }
     }
-    
+
     private boolean alreadySaw(Board board) {
         return _seenBoards.contains(board);
     }
-    
+
     private void push(Board board) {
         _queue.add(board);
     }
-    
+
     private Board pop() {
         return _queue.poll();
     }

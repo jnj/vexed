@@ -25,14 +25,14 @@ public enum Direction {
     @Override
     public String toString() {
         switch (this) {
-        case Left:
-            return "L";
-        case Right:
-            return "R";
-        case Down:
-            return "D";
-        default:
-            return "?";
+            case Left:
+                return "L";
+            case Right:
+                return "R";
+            case Down:
+                return "D";
+            default:
+                return "?";
         }
     }
 }

@@ -1,9 +1,9 @@
 package vexed;
 
-import static vexed.Direction.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static vexed.Direction.*;
 
 public class MapBoard implements Board {
 
@@ -13,7 +13,19 @@ public class MapBoard implements Board {
     private final int _height;
     private final PositionSupplier _positionSupplier;
 
-    public static MapBoard fromString(String layoutText, PositionSupplier positionSupplier) {
+    MapBoard(int width, int height, Map<Position, Block> configuration, PositionSupplier positionSupplier) {
+        _width = width;
+        _height = height;
+        _contents.putAll(configuration);
+        _positionSupplier = positionSupplier;
+    }
+
+    private MapBoard(MapBoard board) {
+        this(board._width, board._height, board._contents, board._positionSupplier);
+        _moveHistory.addAll(board._moveHistory);
+    }
+
+    static MapBoard fromString(String layoutText, PositionSupplier positionSupplier) {
         String[] lines = layoutText.split("\n");
         int height = lines.length;
         int width = lines[0].length();
@@ -28,18 +40,6 @@ public class MapBoard implements Board {
             }
 
         return new MapBoard(width, height, layout, positionSupplier);
-    }
-
-    public MapBoard(int width, int height, Map<Position, Block> configuration, PositionSupplier positionSupplier) {
-        _width = width;
-        _height = height;
-        _contents.putAll(configuration);
-        _positionSupplier = positionSupplier;
-    }
-
-    private MapBoard(MapBoard board) {
-        this(board._width, board._height, board._contents, board._positionSupplier);
-        _moveHistory.addAll(board._moveHistory);
     }
 
     public int getHeight() {
@@ -73,7 +73,7 @@ public class MapBoard implements Board {
 
     private boolean movePossible(Move move) {
         return withinBoardBounds(move.getPosition()) && moveableBlockAt(move.getPosition())
-                && canPutBlockAt(move.getTargetPosition());
+               && canPutBlockAt(move.getTargetPosition());
     }
 
     private void doRecordedMove(Move move) {
@@ -183,12 +183,12 @@ public class MapBoard implements Board {
 
     private boolean withinBoardBounds(Position position) {
         return position.getColumn() >= 0 && position.getColumn() < _width && position.getRow() >= 0
-                && position.getRow() < _height;
+               && position.getRow() < _height;
     }
 
     private boolean equalBlocksAt(Position first, Position second) {
         return _contents.containsKey(first) && _contents.containsKey(second)
-                && _contents.get(first).equals(_contents.get(second));
+               && _contents.get(first).equals(_contents.get(second));
     }
 
     private boolean isOccupied(Position position) {
@@ -219,7 +219,7 @@ public class MapBoard implements Board {
                 Block thisBlock = getBlockAt(position);
                 Block thatBlock = other.getBlockAt(position);
 
-                if (!Objects.areEqual(thisBlock, thatBlock))
+                if (!java.util.Objects.equals(thisBlock, thatBlock))
                     return false;
             }
 
@@ -236,7 +236,7 @@ public class MapBoard implements Board {
 
         for (Position position : positions()) {
             Block block = getBlockAt(position);
-            hashCode = factor * hashCode + Objects.hash(block);
+            hashCode = factor * hashCode + java.util.Objects.hash(block);
         }
 
         return hashCode;
@@ -302,7 +302,7 @@ public class MapBoard implements Board {
         private final int _height;
         private final PositionSupplier _positionSupplier;
 
-        public PositionSequence(int width, int height, PositionSupplier positionSupplier) {
+        PositionSequence(int width, int height, PositionSupplier positionSupplier) {
             _width = width;
             _height = height;
             _positionSupplier = positionSupplier;
@@ -337,24 +337,23 @@ public class MapBoard implements Board {
         }
     }
 
-    public static class Builder {
+    static class Builder {
 
         private final StringBuilder _layoutBuilder = new StringBuilder();
 
         private final int _interiorWidth;
 
-        public Builder(int interiorWidth) {
+        Builder(int interiorWidth) {
             _interiorWidth = interiorWidth;
         }
 
-        public Builder addInteriorRow(String rowText) {
+        void addInteriorRow(String rowText) {
             if (rowText.length() != _interiorWidth)
                 throw new IllegalArgumentException("text length should be " + _interiorWidth);
             addWall();
             _layoutBuilder.append(rowText);
             addWall();
             endRow();
-            return this;
         }
 
         private void addWall() {
@@ -370,7 +369,7 @@ public class MapBoard implements Board {
                 addWall();
         }
 
-        public MapBoard build(PositionSupplier positionSupplier) {
+        MapBoard build(PositionSupplier positionSupplier) {
             addBottomWall();
             return MapBoard.fromString(_layoutBuilder.toString(), positionSupplier);
         }

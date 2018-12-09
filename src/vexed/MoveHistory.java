@@ -8,28 +8,28 @@ public class MoveHistory {
 
     private final List<Move> _moves;
 
-    public MoveHistory() {
+    MoveHistory() {
         _moves = new LinkedList<>();
     }
 
-    public MoveHistory(MoveHistory moveHistory) {
+    MoveHistory(MoveHistory moveHistory) {
         this();
         addAll(moveHistory);
     }
 
-    public void addAll(MoveHistory moveHistory) {
+    void addAll(MoveHistory moveHistory) {
         _moves.addAll(moveHistory._moves);
     }
 
-    public int size() {
+    int size() {
         return _moves.size();
     }
 
-    public void add(Move move) {
+    void add(Move move) {
         _moves.add(move);
     }
 
-    public List<Move> getMoves() {
+    List<Move> getMoves() {
         return Collections.unmodifiableList(_moves);
     }
 

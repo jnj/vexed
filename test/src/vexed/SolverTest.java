@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.Before;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public abstract class SolverTest {
 
@@ -27,7 +28,7 @@ public abstract class SolverTest {
         boardBuilder.addInteriorRow("A  ");
         Board board = boardBuilder.build(_positionSupplier);
         MoveHistory moves = _solver.solve(board).getMoveHistory();
-        assertEquals(Arrays.asList(new Move(2, 0, Direction.Left)), moves.getMoves());
+        assertEquals(Collections.singletonList(new Move(2, 0, Direction.Left)), moves.getMoves());
     }
 
     @Test
@@ -72,7 +73,7 @@ public abstract class SolverTest {
         try {
             _solver.solve(board);
             fail("expected exception");
-        } catch (UnsolveableBoardException e) {
+        } catch (UnsolveableBoardException ignored) {
         }
     }
 }

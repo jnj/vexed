@@ -4,10 +4,7 @@ import static org.junit.Assert.*;
 import static vexed.Direction.Left;
 import static vexed.Direction.Right;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Test;
 
@@ -53,7 +50,7 @@ public class MapBoardTest {
 		Map<Position, Block> layout = new HashMap<>();
 		MapBoard firstBoard = new MapBoard(5, 2, layout, positionSupplier);
 		MapBoard secondBoard = new MapBoard(5, 3, layout, positionSupplier);
-		assertFalse(firstBoard.equals(secondBoard));
+		assertNotEquals(firstBoard, secondBoard);
 	}
 
 	@Test
@@ -84,13 +81,13 @@ public class MapBoardTest {
 		try {
 			board.apply(new Move(1, 0, Left));
 			fail("expected exception");
-		} catch (IllegalMoveException e) {			
+		} catch (IllegalMoveException ignored) {
 		}	
 		
 		try {
 			board.apply(new Move(0, 0, Left));
 			fail("expected exception");
-		} catch (IllegalMoveException e) {			
+		} catch (IllegalMoveException ignored) {
 		}
 	}
 
@@ -102,7 +99,7 @@ public class MapBoardTest {
         Move move = new Move(1, 0, Right);
         Board newBoard = board.apply(move);
         assertEquals(1, newBoard.getMoveHistory().size());
-        assertEquals(Arrays.asList(move), newBoard.getMoveHistory().getMoves());
+        assertEquals(Collections.singletonList(move), newBoard.getMoveHistory().getMoves());
     }
 
     @Test
@@ -153,7 +150,7 @@ public class MapBoardTest {
         Move firstMove = new Move(3, 0, Right);
         MapBoard firstBoard = board.apply(firstMove);
         assertEquals(1, firstBoard.getMoveHistory().size());
-        assertEquals(Arrays.asList(firstMove), firstBoard.getMoveHistory().getMoves());
+        assertEquals(Collections.singletonList(firstMove), firstBoard.getMoveHistory().getMoves());
         Move secondMove = new Move(2, 0, Left);
         MapBoard secondBoard = firstBoard.apply(secondMove);
         assertEquals(2, secondBoard.getMoveHistory().size());
@@ -181,12 +178,11 @@ public class MapBoardTest {
 
 	@Test
 	public void testFromString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("#...#\n");
-		builder.append("#.C.#\n");
-		builder.append("#ABC#\n");
-		builder.append("#####");
-		MapBoard boardFromString = MapBoard.fromString(builder.toString(), positionSupplier);
+		String builder = "#...#\n" +
+						 "#.C.#\n" +
+						 "#ABC#\n" +
+						 "#####";
+		MapBoard boardFromString = MapBoard.fromString(builder, positionSupplier);
 		
 		Map<Position, Block> layout = new HashMap<>();
 		layout.put(new Position(0, 0), Block.wall());

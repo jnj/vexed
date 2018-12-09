@@ -1,7 +1,7 @@
 package vexed;
 
-import java.util.concurrent.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class ConcurrentSolver implements Solver {
@@ -17,7 +17,7 @@ public class ConcurrentSolver implements Solver {
         while (!_queue.isEmpty()) {
             Collection<Board> explorationLevel = _queue.poll();
             Collection<Future<Collection<Board>>> futures = new ArrayList<>();
-            
+
             for (Board board : explorationLevel) {
                 if (board.isSolved()) {
                     _executorService.shutdownNow();
@@ -25,7 +25,7 @@ public class ConcurrentSolver implements Solver {
                 } else if (!_seenBoards.contains(board)) {
                     _seenBoards.add(board);
                     BoardExploreTask task = new BoardExploreTask(board);
-                    futures.add(_executorService.submit(task));                    
+                    futures.add(_executorService.submit(task));
                 }
             }
 
@@ -63,7 +63,7 @@ public class ConcurrentSolver implements Solver {
         }
 
         @Override
-        public Collection<Board> call() throws Exception {
+        public Collection<Board> call() {
             return parentBoard.getAvailableMoves().stream().map(parentBoard::apply).collect(Collectors.toList());
         }
     }
