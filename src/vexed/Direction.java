@@ -4,19 +4,19 @@ public enum Direction {
 
     Left {
         Position apply(Position position) {
-            return new Position(position.getColumn() - 1, position.getRow());
+            return new Position(position.column() - 1, position.row());
         }
     },
 
     Right {
         Position apply(Position position) {
-            return new Position(position.getColumn() + 1, position.getRow());
+            return new Position(position.column() + 1, position.row());
         }
     },
 
     Down {
         Position apply(Position position) {
-            return new Position(position.getColumn(), position.getRow() + 1);
+            return new Position(position.column(), position.row() + 1);
         }
     };
 

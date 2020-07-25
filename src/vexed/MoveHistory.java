@@ -6,10 +6,10 @@ import java.util.List;
 
 public class MoveHistory {
 
-    private final List<Move> _moves;
+    private final List<Move> moves;
 
     MoveHistory() {
-        _moves = new LinkedList<>();
+        moves = new LinkedList<>();
     }
 
     MoveHistory(MoveHistory moveHistory) {
@@ -18,23 +18,23 @@ public class MoveHistory {
     }
 
     void addAll(MoveHistory moveHistory) {
-        _moves.addAll(moveHistory._moves);
+        moves.addAll(moveHistory.moves);
     }
 
     int size() {
-        return _moves.size();
+        return moves.size();
     }
 
     void add(Move move) {
-        _moves.add(move);
+        moves.add(move);
     }
 
     List<Move> getMoves() {
-        return Collections.unmodifiableList(_moves);
+        return Collections.unmodifiableList(moves);
     }
 
     @Override
     public String toString() {
-        return _moves.toString();
+        return moves.toString();
     }
 }

@@ -200,8 +200,8 @@ public class MapBoard implements Board {
     }
 
     private boolean withinBoardBounds(Position position) {
-        return position.getColumn() >= 0 && position.getColumn() < width && position.getRow() >= 0
-               && position.getRow() < height;
+        return position.column() >= 0 && position.column() < width && position.row() >= 0
+               && position.row() < height;
     }
 
     private boolean equalBlocksAt(Position first, Position second) {
@@ -268,7 +268,7 @@ public class MapBoard implements Board {
             var block = getBlockAt(position);
             builder.append(block == null ? "." : block.symbol());
 
-            if (position.getColumn() == width - 1)
+            if (position.column() == width - 1)
                 builder.append("\n");
         }
 
