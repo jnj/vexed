@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class ConcurrentSolver implements Solver {
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(64);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private final Queue<Collection<Board>> queue = new LinkedBlockingQueue<>();
     private final Set<Board> seenBoards = Collections.synchronizedSet(new HashSet<>());
 
