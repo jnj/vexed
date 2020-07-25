@@ -74,7 +74,7 @@ public class MapBoard implements Board {
     }
 
     private boolean movePossible(Move move) {
-        return withinBoardBounds(move.getPosition()) && moveableBlockAt(move.getPosition())
+        return withinBoardBounds(move.position()) && moveableBlockAt(move.position())
                && canPutBlockAt(move.getTargetPosition());
     }
 
@@ -88,8 +88,8 @@ public class MapBoard implements Board {
     }
 
     private void doMove(Move move) {
-        contents.put(move.getTargetPosition(), contents.get(move.getPosition()));
-        contents.remove(move.getPosition());
+        contents.put(move.getTargetPosition(), contents.get(move.position()));
+        contents.remove(move.position());
     }
 
     private void settleAndClear() {
