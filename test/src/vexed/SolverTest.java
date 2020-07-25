@@ -10,14 +10,14 @@ import java.util.Collections;
 
 public abstract class SolverTest {
 
-    private Solver _solver;
-    private final PositionSupplier _positionSupplier = new CachingPositionSupplier();
+    private Solver solver;
+    private final PositionSupplier positionSupplier = new CachingPositionSupplier();
 
     abstract Solver getSolverInstance();
 
     @Before
     public void setup() {
-        _solver = getSolverInstance();
+        solver = getSolverInstance();
     }
 
     @Test
@@ -26,8 +26,8 @@ public abstract class SolverTest {
         boardBuilder.addInteriorRow(" A ");
         boardBuilder.addInteriorRow(" # ");
         boardBuilder.addInteriorRow("A  ");
-        Board board = boardBuilder.build(_positionSupplier);
-        var moves = _solver.solve(board).getMoveHistory();
+        Board board = boardBuilder.build(positionSupplier);
+        var moves = solver.solve(board).getMoveHistory();
         assertEquals(Collections.singletonList(new Move(2, 0, Direction.Left)), moves.getMoves());
     }
 
@@ -37,8 +37,8 @@ public abstract class SolverTest {
         boardBuilder.addInteriorRow(" BA  ");
         boardBuilder.addInteriorRow(" ##  ");
         boardBuilder.addInteriorRow("  A B");
-        Board board = boardBuilder.build(_positionSupplier);
-        var moves = _solver.solve(board).getMoveHistory();
+        Board board = boardBuilder.build(positionSupplier);
+        var moves = solver.solve(board).getMoveHistory();
         assertEquals(Arrays.asList(new Move(3, 0, Direction.Right),
                 new Move(2, 0, Direction.Right),
                 new Move(3, 0, Direction.Right)), moves.getMoves());
@@ -51,8 +51,8 @@ public abstract class SolverTest {
         boardBuilder.addInteriorRow("  BA  ");
         boardBuilder.addInteriorRow("  ##  ");
         boardBuilder.addInteriorRow("  A BC");
-        Board board = boardBuilder.build(_positionSupplier);
-        System.out.println(_solver.solve(board));
+        Board board = boardBuilder.build(positionSupplier);
+        System.out.println(solver.solve(board));
     }
 
     @Test
@@ -63,8 +63,8 @@ public abstract class SolverTest {
         builder.addInteriorRow(" ## #");
         builder.addInteriorRow(" XZ  ");
         builder.addInteriorRow("###YZ");
-        Board board = builder.build(_positionSupplier);
-        System.out.println(_solver.solve(board));
+        Board board = builder.build(positionSupplier);
+        System.out.println(solver.solve(board));
     }
 
     @Test
@@ -78,15 +78,15 @@ public abstract class SolverTest {
         builder.addInteriorRow("   #    ");
         builder.addInteriorRow(" # #    ");
         builder.addInteriorRow("H  D#EAC");
-        var board = builder.build(_positionSupplier);
-        System.out.println(_solver.solve(board));
+        var board = builder.build(positionSupplier);
+        System.out.println(solver.solve(board));
     }
 
     @Test
     public void recognizeImpossibleToSolveBoard() {
-        var board = MapBoard.fromString("#D#", _positionSupplier);
+        var board = MapBoard.fromString("#D#", positionSupplier);
         try {
-            _solver.solve(board);
+            solver.solve(board);
             fail("expected exception");
         } catch (UnsolveableBoardException ignored) {
         }

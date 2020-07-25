@@ -14,18 +14,13 @@ public class BlockTest {
 
     @Test
     public void testSameSymbolsImplyEqualBlocks() {
-        char symbol = 'A';
-        Block a = new Block(symbol);
-        Block b = new Block(symbol);
-        assertEquals(a, b);
+        final var symbol = 'A';
+        assertEquals(new Block(symbol), new Block(symbol));
     }
 
     @Test
     public void testEqualBlocksHaveEqualHashCodes() {
-        char symbol = 'A';
-        Block a = new Block(symbol);
-        Block b = new Block(symbol);
-        assertEquals(a.hashCode(), b.hashCode());
+        final var symbol = 'A';
+        assertEquals(new Block(symbol).hashCode(), new Block(symbol).hashCode());
     }
-
 }

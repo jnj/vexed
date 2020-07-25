@@ -12,9 +12,9 @@ public class PositionTest {
 	}
 
 	@Test
-	public void testEqualPositionsHaveEqualHashCodes() {		
-		Position position1 = new Position(1, 2);
-		Position position2 = new Position(1, 2);
+	public void testEqualPositionsHaveEqualHashCodes() {
+		final var position1 = new Position(1, 2);
+		final var position2 = new Position(1, 2);
 		assertEquals(position1, position2);
 		assertEquals(position1.hashCode(), position2.hashCode());
 	}
