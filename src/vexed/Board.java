@@ -1,6 +1,7 @@
 package vexed;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public interface Board {
 
@@ -13,6 +14,8 @@ public interface Board {
     Collection<Move> getAvailableMoves();
 
     boolean isSolved();
+
+    Stream<Board> applyMoves();
 
     Board apply(Move move);
 

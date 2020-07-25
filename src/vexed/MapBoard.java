@@ -1,10 +1,13 @@
 package vexed;
 
 import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static vexed.Direction.*;
 
 public class MapBoard implements Board {
+    private static final List<Direction> DIRECTION_LIST = List.of(Left, Right);
     private static final Direction[] DIRECTIONS = {Left, Right};
 
     private final Map<Position, Block> contents = new HashMap<>();
@@ -43,26 +46,32 @@ public class MapBoard implements Board {
         return new MapBoard(width, height, layout, positionSupplier);
     }
 
+    @Override
     public int getHeight() {
         return height;
     }
 
+    @Override
     public int getWidth() {
         return width;
     }
 
+    @Override
     public boolean isSolved() {
         return getOccupiedPositions().isEmpty();
     }
 
+    @Override
     public MoveHistory getMoveHistory() {
         return new MoveHistory(moveHistory);
     }
 
+    @Override
     public Block getBlockAt(Position position) {
         return contents.get(position);
     }
 
+    @Override
     public MapBoard apply(Move move) {
         if (!movePossible(move)) {
             throw new IllegalMoveException();
@@ -71,6 +80,33 @@ public class MapBoard implements Board {
         resultingBoard.doRecordedMove(move);
         resultingBoard.settleAndClear();
         return resultingBoard;
+    }
+
+    @Override
+    public Collection<Move> getAvailableMoves() {
+        Collection<Move> moves = new HashSet<>();
+
+        for (var position : getOccupiedPositions()) {
+            for (var direction : DIRECTIONS) {
+                if (canPutBlockAt(position.getNeighborTo(direction))) {
+                    moves.add(new Move(position, direction));
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    @Override
+    public Stream<Board> applyMoves() {
+        return availableMovesStream().map(this::apply);
+    }
+
+    private Stream<Move> availableMovesStream() {
+        return getOccupiedPositionsStream().flatMap(pos ->
+                DIRECTION_LIST.stream()
+                        .filter(dir -> canPutBlockAt(pos.getNeighborTo(dir)))
+                        .map(dir -> new Move(pos, dir)));
     }
 
     private boolean movePossible(Move move) {
@@ -150,20 +186,6 @@ public class MapBoard implements Board {
         return groups.getMembersOfNonSingletonGroups();
     }
 
-    public Collection<Move> getAvailableMoves() {
-        Collection<Move> moves = new HashSet<>();
-
-        for (var position : getOccupiedPositions()) {
-            for (var direction : DIRECTIONS) {
-                if (canPutBlockAt(position.getNeighborTo(direction))) {
-                    moves.add(new Move(position, direction));
-                }
-            }
-        }
-
-        return moves;
-    }
-
     private Collection<Position> getOccupiedPositions() {
         final var positions = getPositionsFromBottomUp();
         final var list = new ArrayList<Position>();
@@ -179,6 +201,10 @@ public class MapBoard implements Board {
         return list;
     }
 
+    private Stream<Position> getOccupiedPositionsStream() {
+        return getPositionsFromBottomUpStream().filter(this::moveableBlockAt);
+    }
+
     private List<Position> getPositionsFromBottomUp() {
         final var positions = new ArrayList<Position>(width * height);
 
@@ -189,6 +215,31 @@ public class MapBoard implements Board {
         }
 
         return positions;
+    }
+
+    private Stream<Position> getPositionsFromBottomUpStream() {
+        final var iter = new Iterator<Position>() {
+            int row = height - 1;
+            int col = width - 1;
+
+            @Override
+            public boolean hasNext() {
+                return row >= 0 && col >= 0;
+            }
+
+            @Override
+            public Position next() {
+                final var pos = positionSupplier.getPosition(row, col);
+                if (--col < 0) {
+                    row--;
+                    col = width - 1;
+                }
+                return pos;
+            }
+        };
+
+        final var spliter = Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED);
+        return StreamSupport.stream(spliter, false);
     }
 
     private boolean moveableBlockAt(Position position) {
