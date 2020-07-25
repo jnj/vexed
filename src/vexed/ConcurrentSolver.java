@@ -6,34 +6,36 @@ import java.util.stream.Collectors;
 
 public class ConcurrentSolver implements Solver {
 
-    private final ExecutorService _executorService = Executors.newFixedThreadPool(64);
-    private final Queue<Collection<Board>> _queue = new LinkedBlockingQueue<>();
-    private final Set<Board> _seenBoards = Collections.synchronizedSet(new HashSet<>());
+    private final ExecutorService executorService = Executors.newFixedThreadPool(64);
+    private final Queue<Collection<Board>> queue = new LinkedBlockingQueue<>();
+    private final Set<Board> seenBoards = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public Solution solve(Board rootBoard) throws UnsolveableBoardException {
-        _queue.add(Collections.singleton(rootBoard));
+        queue.add(Collections.singleton(rootBoard));
 
-        while (!_queue.isEmpty()) {
-            Collection<Board> explorationLevel = _queue.poll();
+        while (!queue.isEmpty()) {
+            final var explorationLevel = queue.poll();
             Collection<Future<Collection<Board>>> futures = new ArrayList<>();
 
-            for (Board board : explorationLevel) {
+            for (var board : explorationLevel) {
                 if (board.isSolved()) {
-                    _executorService.shutdownNow();
-                    return new Solution(board.getMoveHistory(), _seenBoards.size());
-                } else if (!_seenBoards.contains(board)) {
-                    _seenBoards.add(board);
-                    BoardExploreTask task = new BoardExploreTask(board);
-                    futures.add(_executorService.submit(task));
+                    executorService.shutdownNow();
+                    return new Solution(board.getMoveHistory(), seenBoards.size());
+                } else if (!seenBoards.contains(board)) {
+                    seenBoards.add(board);
+                    final var task = new BoardExploreTask(board);
+                    futures.add(executorService.submit(task));
                 }
             }
 
-            Collection<Board> nextLevel = mergeResultingBoards(futures);
+            final var nextLevel = mergeResultingBoards(futures);
+
             if (nextLevel.isEmpty()) {
                 break;
             }
-            _queue.add(nextLevel);
+
+            queue.add(nextLevel);
         }
 
         throw new UnsolveableBoardException();
@@ -42,13 +44,15 @@ public class ConcurrentSolver implements Solver {
     private Collection<Board> mergeResultingBoards(Collection<Future<Collection<Board>>> futures) {
         // merge results
         Collection<Board> nextLevel = new ArrayList<>();
-        for (Future<Collection<Board>> future : futures) {
+
+        for (var future : futures) {
             try {
                 nextLevel.addAll(future.get());
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
         }
+
         return nextLevel;
     }
 
