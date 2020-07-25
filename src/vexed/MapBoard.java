@@ -1,7 +1,6 @@
 package vexed;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static vexed.Direction.*;
 
@@ -26,15 +25,15 @@ public class MapBoard implements Board {
     }
 
     static MapBoard fromString(String layoutText, PositionSupplier positionSupplier) {
-        String[] lines = layoutText.split("\n");
-        int height = lines.length;
-        int width = lines[0].length();
+        var lines = layoutText.split("\n");
+        var height = lines.length;
+        var width = lines[0].length();
 
         Map<Position, Block> layout = new HashMap<>();
 
-        for (int row = 0; row < lines.length; row++)
-            for (int column = 0; column < lines[row].length(); column++) {
-                char symbol = lines[row].charAt(column);
+        for (var row = 0; row < lines.length; row++)
+            for (var column = 0; column < lines[row].length(); column++) {
+                var symbol = lines[row].charAt(column);
                 if (symbol != '.' && symbol != ' ')
                     layout.put(positionSupplier.getPosition(row, column), new Block(symbol));
             }
@@ -65,7 +64,7 @@ public class MapBoard implements Board {
     public MapBoard apply(Move move) {
         if (!movePossible(move))
             throw new IllegalMoveException();
-        MapBoard resultingBoard = copy();
+        var resultingBoard = copy();
         resultingBoard.doRecordedMove(move);
         resultingBoard.settleAndClear();
         return resultingBoard;
@@ -97,11 +96,11 @@ public class MapBoard implements Board {
     }
 
     private void settleBlocks() {
-        for (Position position : getOccupiedPositions()) {
-            Position currentPosition = position;
+        for (var position : getOccupiedPositions()) {
+            var currentPosition = position;
 
             while (blockFallingFrom(currentPosition)) {
-                Move move = new Move(currentPosition, Down);
+                var move = new Move(currentPosition, Down);
                 doMove(move);
                 currentPosition = move.getTargetPosition();
             }
@@ -117,7 +116,7 @@ public class MapBoard implements Board {
     }
 
     private boolean clearPositions(Collection<Position> positions) {
-        for (Position position : positions) {
+        for (var position : positions) {
             _contents.remove(position);
         }
 
@@ -125,15 +124,15 @@ public class MapBoard implements Board {
     }
 
     private Collection<Position> findBlockGroups() {
-        GroupContainer groups = new GroupContainer();
-        Direction[] directionsToLook = new Direction[]{Down, Right};
+        var groups = new GroupContainer();
+        var directionsToLook = new Direction[]{Down, Right};
 
-        for (Position position : getPositionsFromBottomUp()) {
+        for (var position : getPositionsFromBottomUp()) {
             if (!moveableBlockAt(position))
                 continue;
 
-            for (Direction direction : directionsToLook) {
-                Position neighboringPosition = position.getNeighborTo(direction);
+            for (var direction : directionsToLook) {
+                var neighboringPosition = position.getNeighborTo(direction);
                 if (equalBlocksAt(position, neighboringPosition))
                     groups.addToGroup(position, groups.getGroup(neighboringPosition));
             }
@@ -147,10 +146,10 @@ public class MapBoard implements Board {
 
     public Collection<Move> getAvailableMoves() {
         Collection<Move> moves = new HashSet<>();
-        Direction[] directions = new Direction[]{Left, Right};
+        var directions = new Direction[]{Left, Right};
 
-        for (Position position : getOccupiedPositions())
-            for (Direction direction : directions)
+        for (var position : getOccupiedPositions())
+            for (var direction : directions)
                 if (canPutBlockAt(position.getNeighborTo(direction)))
                     moves.add(new Move(position, direction));
 
@@ -158,16 +157,25 @@ public class MapBoard implements Board {
     }
 
     private Collection<Position> getOccupiedPositions() {
-        return getPositionsFromBottomUp().stream()
-                .filter(this::moveableBlockAt)
-                .collect(Collectors.toList());
+        var positions = getPositionsFromBottomUp();
+        var list = new ArrayList<Position>();
+
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0, size = positions.size(); i < size; i++) {
+            var position = positions.get(i);
+            if (moveableBlockAt(position)) {
+                list.add(position);
+            }
+        }
+
+        return list;
     }
 
     private List<Position> getPositionsFromBottomUp() {
         List<Position> positions = new ArrayList<>(_width * _height);
 
-        for (int row = _height - 1; row >= 0; row--)
-            for (int column = _width - 1; column >= 0; column--)
+        for (var row = _height - 1; row >= 0; row--)
+            for (var column = _width - 1; column >= 0; column--)
                 positions.add(_positionSupplier.getPosition(row, column));
 
         return positions;
@@ -210,14 +218,14 @@ public class MapBoard implements Board {
         else if (!(o instanceof Board))
             return false;
         else {
-            Board other = (Board) o;
+            var other = (Board) o;
 
             if (getWidth() != other.getWidth() || getHeight() != other.getHeight())
                 return false;
 
-            for (Position position : positions()) {
-                Block thisBlock = getBlockAt(position);
-                Block thatBlock = other.getBlockAt(position);
+            for (var position : positions()) {
+                var thisBlock = getBlockAt(position);
+                var thatBlock = other.getBlockAt(position);
 
                 if (!java.util.Objects.equals(thisBlock, thatBlock))
                     return false;
@@ -229,13 +237,13 @@ public class MapBoard implements Board {
 
     @Override
     public int hashCode() {
-        int factor = 31;
-        int hashCode = 17;
+        var factor = 31;
+        var hashCode = 17;
         hashCode = factor * hashCode + _width;
         hashCode = factor * hashCode + _height;
 
-        for (Position position : positions()) {
-            Block block = getBlockAt(position);
+        for (var position : positions()) {
+            var block = getBlockAt(position);
             hashCode = factor * hashCode + java.util.Objects.hash(block);
         }
 
@@ -244,11 +252,11 @@ public class MapBoard implements Board {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
 
-        for (Position position : positions()) {
-            Block block = getBlockAt(position);
-            builder.append(block == null ? "." : block.getSymbol());
+        for (var position : positions()) {
+            var block = getBlockAt(position);
+            builder.append(block == null ? "." : block.symbol());
 
             if (position.getColumn() == _width - 1)
                 builder.append("\n");
@@ -289,7 +297,7 @@ public class MapBoard implements Board {
         Collection<Position> getMembersOfNonSingletonGroups() {
             Collection<Position> positions = new HashSet<>();
 
-            for (Collection<Position> group : _groupsMappedToPositions.values())
+            for (var group : _groupsMappedToPositions.values())
                 if (group.size() > 1)
                     positions.addAll(group);
 
@@ -315,7 +323,7 @@ public class MapBoard implements Board {
                 int column;
 
                 public Position next() {
-                    Position position = _positionSupplier.getPosition(row, column);
+                    var position = _positionSupplier.getPosition(row, column);
 
                     if (column == _width - 1) {
                         column = 0;
@@ -365,7 +373,7 @@ public class MapBoard implements Board {
         }
 
         private void addBottomWall() {
-            for (int i = 0; i < _interiorWidth + 2; i++)
+            for (var i = 0; i < _interiorWidth + 2; i++)
                 addWall();
         }
 

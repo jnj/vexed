@@ -70,14 +70,14 @@ public abstract class SolverTest {
     @Test
     public void solveBenchmarkBoard() {
         var builder = new MapBoard.Builder(8);
-        builder.addInteriorRow("D       ");
-        builder.addInteriorRow("#       ");
-        builder.addInteriorRow("   A    ");
-        builder.addInteriorRow("   H#   ");
+        builder.addInteriorRow("D      B");
+        builder.addInteriorRow("#      #");
+        builder.addInteriorRow("  #A    ");
+        builder.addInteriorRow("   H#BE ");
         builder.addInteriorRow("   C ## ");
         builder.addInteriorRow("   #    ");
         builder.addInteriorRow(" # #    ");
-        builder.addInteriorRow("H  D# AC");
+        builder.addInteriorRow("H  D#EAC");
         var board = builder.build(_positionSupplier);
         System.out.println(_solver.solve(board));
     }
