@@ -2,20 +2,20 @@ package vexed;
 
 public class Solution {
 
-    private final MoveHistory _moveHistory;
-    private final int _numBoards;
+    private final MoveHistory moveHistory;
+    private final int numBoards;
 
     Solution(final MoveHistory moveHistory, final int numBoards) {
-        _moveHistory = moveHistory;
-        _numBoards = numBoards;
+        this.moveHistory = moveHistory;
+        this.numBoards = numBoards;
     }
 
     MoveHistory getMoveHistory() {
-        return _moveHistory;
+        return moveHistory;
     }
 
     @Override
     public String toString() {
-        return "Winning moves: " + _moveHistory + "\nnumber of boards: " + _numBoards;
+        return "Winning moves: " + moveHistory + "\nnumber of boards: " + numBoards;
     }
 }
