@@ -1,15 +1,36 @@
 package vexed;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class CachingPositionSupplier implements PositionSupplier {
 
-    private final Map<Integer, Map<Integer, Position>> cache = new HashMap<>();
+    private Position[][] positions = new Position[10][10];
+
+    CachingPositionSupplier() {
+        populate();
+    }
 
     @Override
     public Position getPosition(int row, int col) {
-        final var rowCache = cache.computeIfAbsent(row, r -> new HashMap<>());
-        return rowCache.computeIfAbsent(col, c -> new Position(col, row));
+        if (row >= positions.length || col >= positions[row].length) {
+            grow(row, col);
+        }
+
+        return positions[row][col];
+    }
+
+    private void populate() {
+        for (var row = 0; row < positions.length; row++) {
+            final var position = positions[row];
+
+            for (var col = 0; col < position.length; col++) {
+                position[col] = new Position(col, row);
+            }
+        }
+    }
+
+    private void grow(int desiredRow, int desiredCol) {
+        final var rowCount = Math.max(desiredRow, positions.length);
+        final var colCount = Math.max(positions[0].length, desiredCol);
+        positions = new Position[rowCount][colCount];
+        populate();
     }
 }
