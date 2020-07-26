@@ -82,13 +82,18 @@ public abstract class SolverTest {
         System.out.println(solver.solve(board));
     }
 
-    @Test
+    @Test(expected = UnsolveableBoardException.class)
     public void recognizeImpossibleToSolveBoard() {
         var board = MapBoard.fromString("#D#", positionSupplier);
-        try {
-            solver.solve(board);
-            fail("expected exception");
-        } catch (UnsolveableBoardException ignored) {
-        }
+        solver.solve(board);
+    }
+
+    @Test(expected = UnsolveableBoardException.class)
+    public void recognizeImpossibleToSolveBoard2() {
+        var board = MapBoard.fromString("#A  #\n" +
+                                        "##  #\n" +
+                                        "#  B#\n" +
+                                        "#####", positionSupplier);
+        solver.solve(board);
     }
 }

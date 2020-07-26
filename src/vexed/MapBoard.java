@@ -303,7 +303,7 @@ public class MapBoard implements Board {
         hashCode = factor * hashCode + width;
         hashCode = factor * hashCode + height;
 
-        for (var position : positions()) {
+        for (var position : getOccupiedPositions()) {
             var block = getBlockAt(position);
             hashCode = factor * hashCode + java.util.Objects.hash(block);
         }
