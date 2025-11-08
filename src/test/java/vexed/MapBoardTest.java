@@ -1,36 +1,38 @@
 package vexed;
 
+import org.junit.Test;
+
+import java.util.*;
+
 import static org.junit.Assert.*;
 import static vexed.Direction.Left;
 import static vexed.Direction.Right;
 
-import java.util.*;
-
-import org.junit.Test;
-
 public class MapBoardTest {
 
+    private final BlockCache blockCache = new BlockCache();
+    private final MoveCache moveCache = new MoveCache(10);
     private final PositionSupplier positionSupplier = new CachingPositionSupplier();
 
 	@Test
-    public void testMapBuilder() {
+    public void mapBuilder() {
 		final var builder = new MapBoard.Builder(4);
         builder.addInteriorRow(" A  ");
         builder.addInteriorRow(" # B");
         builder.addInteriorRow("C  #");
-		final var board = builder.build(positionSupplier);
+		final var board = builder.build(positionSupplier, blockCache, moveCache);
         assertEquals(6, board.getWidth());
         assertEquals(4, board.getHeight());
     }
 
 	@Test
-    public void testGetAvailableMovesReturnsAllAvailableMoves() {
+    public void getAvailableMovesReturnsAllAvailableMoves() {
 		final var builder = new MapBoard.Builder(4);
         builder.addInteriorRow(" A  ");
         builder.addInteriorRow(" # B");
         builder.addInteriorRow("C  #");
-		final var board = builder.build(positionSupplier);
-        Collection<Move> expectedMoves = List.of(new Move(2, 0, Left),
+		final var board = builder.build(positionSupplier, blockCache, moveCache);
+        final Collection<Move> expectedMoves = List.of(new Move(2, 0, Left),
                                                        new Move(2, 0, Right), 
                                                        new Move(4, 1, Left), 
                                                        new Move(1, 2, Right));
@@ -38,115 +40,117 @@ public class MapBoardTest {
     }
 
 	@Test
-	public void testEmptyBoardsWithEqualDimensionsAreEqual() {
+	public void emptyBoardsWithEqualDimensionsAreEqual() {
 		final var layout = new HashMap<Position, Block>();
-		final var firstBoard = new MapBoard(1, 1, layout, positionSupplier);
-		final var secondBoard = new MapBoard(1, 1, layout, positionSupplier);
+		final var firstBoard = new MapBoard(1, 1, layout, positionSupplier, moveCache);
+		final var secondBoard = new MapBoard(1, 1, layout, positionSupplier, moveCache);
 		assertEquals(firstBoard, secondBoard);
 	}
 
 	@Test
-	public void testBoardsWithDifferentDimensionsAreUnequal() {
+	public void boardsWithDifferentDimensionsAreUnequal() {
 		final var layout = new HashMap<Position, Block>();
-		final var firstBoard = new MapBoard(5, 2, layout, positionSupplier);
-		final var secondBoard = new MapBoard(5, 3, layout, positionSupplier);
+		final var firstBoard = new MapBoard(5, 2, layout, positionSupplier, moveCache);
+		final var secondBoard = new MapBoard(5, 3, layout, positionSupplier, moveCache);
 		assertNotEquals(firstBoard, secondBoard);
 	}
 
 	@Test
-	public void testBoardsWithSameDimensionsAndContentsAreEqual() {
+	public void boardsWithSameDimensionsAndContentsAreEqual() {
 		final var layout = new HashMap<Position, Block>();
 		layout.put(new Position(0, 0), Block.wall());
 		layout.put(new Position(1, 2), new Block('A'));
-		final var firstBoard = new MapBoard(4, 4, layout, positionSupplier);
-		final var secondBoard = new MapBoard(4, 4, layout, positionSupplier);
+		final var firstBoard = new MapBoard(4, 4, layout, positionSupplier, moveCache);
+		final var secondBoard = new MapBoard(4, 4, layout, positionSupplier, moveCache);
 		assertEquals(firstBoard, secondBoard);
 	}
 
 	@Test
-	public void testGetBlockAt() {
+	public void getBlockAt() {
 		final var layout = new HashMap<Position, Block>();
 		final var block = Block.wall();
 		final var position = new Position(1, 3);
 		layout.put(position, block);
-		final var board = new MapBoard(3, 4, layout, positionSupplier);
+		final var board = new MapBoard(3, 4, layout, positionSupplier, moveCache);
 		assertEquals(block, board.getBlockAt(position));
 		assertNull(board.getBlockAt(new Position(0, 1)));
 	}
 
 	@Test
-	public void testApplyMoveWillNotMakeImpossibleMove() {
-		final var board = MapBoard.fromString("#A#", positionSupplier);
+	public void applyMoveWillNotMakeImpossibleMove() {
+		final var board = MapBoard.fromString("#A#", positionSupplier, blockCache, moveCache);
 		
 		try {
 			board.apply(new Move(1, 0, Left));
 			fail("expected exception");
-		} catch (IllegalMoveException ignored) {
+		} catch (final IllegalMoveException ignored) {
 		}	
 		
 		try {
 			board.apply(new Move(0, 0, Left));
 			fail("expected exception");
-		} catch (IllegalMoveException ignored) {
+		} catch (final IllegalMoveException ignored) {
 		}
 	}
 
 	@Test
-    public void testApplyMoveRecordsMoveInHistory() {
+    public void applyMoveRecordsMoveInHistory() {
 		final var layout = "#A #\n" +
 			               "####";
-		final var board = MapBoard.fromString(layout, positionSupplier);
+		final var board = MapBoard.fromString(layout, positionSupplier, blockCache, moveCache);
 		final var move = new Move(1, 0, Right);
-        Board newBoard = board.apply(move);
+        final Board newBoard = board.apply(move);
         assertEquals(1, newBoard.getMoveHistory().size());
         assertEquals(Collections.singletonList(move), newBoard.getMoveHistory().getMoves());
     }
 
     @Test
-	public void testApplyMoveCanMakeSimpleMove() {
+	public void applyMoveCanMakeSimpleMove() {
 		assertMoveResult("#A #", "# A#", new Move(1, 0, Right));
 	}
 
 	@Test
-	public void testApplyMoveCanMakeMoveWithFalling() {
+	public void applyMoveCanMakeMoveWithFalling() {
 		final var layoutText =
-			"#A #\n" +
-			"## #\n" +
-			"####";
+                """
+                #A #
+                ## #
+                ####""";
 
 		final var expectedLayoutText =
-			"#  #\n" +
-			"##A#\n" +
-			"####";
+                """
+                #  #
+                ##A#
+                ####""";
 		
 		assertMoveResult(layoutText, expectedLayoutText, new Move(1, 0, Right));
 	}
 
 	@Test
-    public void testApplyMoveWithDifferentBlocks() {
+    public void applyMoveWithDifferentBlocks() {
 		var boardBuilder = new MapBoard.Builder(5);
         boardBuilder.addInteriorRow(" BA  ");
         boardBuilder.addInteriorRow(" ##  ");
         boardBuilder.addInteriorRow(" A  B");
-		final var board = boardBuilder.build(positionSupplier);
+		final var board = boardBuilder.build(positionSupplier, blockCache, moveCache);
 		final var newBoard = board.apply(new Move(3, 0, Right));
 
         boardBuilder = new MapBoard.Builder(5);
         boardBuilder.addInteriorRow(" B   ");
         boardBuilder.addInteriorRow(" ##  ");
         boardBuilder.addInteriorRow(" A AB");
-		final var expectedBoard = boardBuilder.build(positionSupplier);
+		final var expectedBoard = boardBuilder.build(positionSupplier, blockCache, moveCache);
         
         assertEquals(expectedBoard, newBoard);
     }
 
 	@Test
-    public void testMoveHistoryRetainsMoves() {
+    public void moveHistoryRetainsMoves() {
 		final var boardBuilder = new MapBoard.Builder(5);
         boardBuilder.addInteriorRow(" BA  ");
         boardBuilder.addInteriorRow(" ##  ");
         boardBuilder.addInteriorRow(" A  B");
-		final var board = boardBuilder.build(positionSupplier);
+		final var board = boardBuilder.build(positionSupplier, blockCache, moveCache);
 		final var firstMove = new Move(3, 0, Right);
 		final var firstBoard = board.apply(firstMove);
         assertEquals(1, firstBoard.getMoveHistory().size());
@@ -158,32 +162,35 @@ public class MapBoardTest {
     }
 
 	@Test
-	public void testApplyMoveWithVanishingBlocks() {
+	public void applyMoveWithVanishingBlocks() {
 		final var layoutText =
-			"#B   #\n" +
-			"#C   #\n" +
-			"##   #\n" +
-			"# C  #\n" +
-			"######";
+                """
+                #B   #
+                #C   #
+                ##   #
+                # C  #
+                ######""";
 		final var expectedLayoutText =
-			"#    #\n" +
-			"#B   #\n" +
-			"##   #\n" +
-			"#    #\n" +
-			"######";		
+                """
+                #    #
+                #B   #
+                ##   #
+                #    #
+                ######""";
 		
 		assertMoveResult(layoutText, expectedLayoutText, new Move(1, 1, Right));		
 	}
 
 	@Test
-	public void testFromString() {
-		final var builder = "#...#\n" +
-			                "#.C.#\n" +
-					        "#ABC#\n" +
-					        "#####";
-		final var boardFromString = MapBoard.fromString(builder, positionSupplier);
-		
-		Map<Position, Block> layout = new HashMap<>();
+	public void fromString() {
+		final var builder =
+                """
+                #...#
+                #.C.#
+                #ABC#
+                #####""";
+		final var boardFromString = MapBoard.fromString(builder, positionSupplier, blockCache, moveCache);
+        final var layout = new HashMap<Position, Block>();
 		layout.put(new Position(0, 0), Block.wall());
 		layout.put(new Position(4, 0), Block.wall());
 		layout.put(new Position(0, 1), Block.wall());
@@ -200,18 +207,18 @@ public class MapBoardTest {
 		layout.put(new Position(1, 2), new Block('A'));
 		layout.put(new Position(3, 2), new Block('C'));
 
-		final var expectedBoard = new MapBoard(5, 4, layout, positionSupplier);
+		final var expectedBoard = new MapBoard(5, 4, layout, positionSupplier, moveCache);
 		assertEquals(expectedBoard, boardFromString);
 	}
 
 	@Test
-	public void testIsSolved() {
-		assertFalse(MapBoard.fromString("#A#", positionSupplier).isSolved());
-		assertTrue(MapBoard.fromString("# #", positionSupplier).isSolved());		
+	public void isSolved() {
+		assertFalse(MapBoard.fromString("#A#", positionSupplier, blockCache, moveCache).isSolved());
+		assertTrue(MapBoard.fromString("# #", positionSupplier, blockCache, moveCache).isSolved());
 	}
 	
 	private void assertMoveResult(String initialLayout, String expectedLayout, Move move) {
-		final var board = MapBoard.fromString(initialLayout, positionSupplier);
-		assertEquals(MapBoard.fromString(expectedLayout, positionSupplier), board.apply(move));
+		final var board = MapBoard.fromString(initialLayout, positionSupplier, blockCache, moveCache);
+		assertEquals(MapBoard.fromString(expectedLayout, positionSupplier, blockCache, moveCache), board.apply(move));
 	}
 }

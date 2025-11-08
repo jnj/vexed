@@ -9,15 +9,14 @@ import java.util.Set;
  * Solves using breadth-first search.
  */
 public class BfsSolver implements Solver {
-
-    private Queue<Board> _queue = new LinkedList<>();
-    private Set<Board> _seenBoards = new HashSet<>();
+    private final Queue<Board> _queue = new LinkedList<>();
+    private final Set<Board> _seenBoards = new HashSet<>();
 
     public Solution solve(Board initialBoard) {
         push(initialBoard);
 
         while (!_queue.isEmpty()) {
-            Board board = pop();
+            final var board = pop();
 
             if (board.isSolved()) {
                 return new Solution(board.getMoveHistory(), countSeenBoards());
@@ -37,8 +36,8 @@ public class BfsSolver implements Solver {
 
     private void explore(Board board) {
         _seenBoards.add(board);
-        for (Move move : board.getAvailableMoves()) {
-            Board newBoard = board.apply(move);
+        for (var move : board.getAvailableMoves()) {
+            var newBoard = board.apply(move);
             push(newBoard);
         }
     }

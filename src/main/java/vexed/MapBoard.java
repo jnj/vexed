@@ -13,37 +13,39 @@ public class MapBoard implements Board {
     private final Map<Position, Block> contents = new HashMap<>();
     private final MoveHistory moveHistory = new MoveHistory();
     private final PositionSupplier positionSupplier;
+    private final MoveCache moveCache;
     private final int width;
     private final int height;
 
-    MapBoard(int width, int height, Map<Position, Block> configuration, PositionSupplier positionSupplier) {
+    MapBoard(int width, int height, Map<Position, Block> configuration, PositionSupplier positionSupplier, MoveCache moveCache) {
         this.width = width;
         this.height = height;
         this.positionSupplier = positionSupplier;
+        this.moveCache = moveCache;
         contents.putAll(configuration);
     }
 
     private MapBoard(MapBoard board) {
-        this(board.width, board.height, board.contents, board.positionSupplier);
+        this(board.width, board.height, board.contents, board.positionSupplier, board.moveCache);
         moveHistory.addAll(board.moveHistory);
     }
 
-    static MapBoard fromString(String layoutText, PositionSupplier positionSupplier) {
+    static MapBoard fromString(String layoutText, PositionSupplier positionSupplier, BlockCache blockCache, MoveCache moveCache) {
         final var lines = layoutText.split("\n");
         final var height = lines.length;
         final var width = lines[0].length();
-
-        Map<Position, Block> layout = new HashMap<>();
+        final Map<Position, Block> layout = new HashMap<>();
 
         for (var row = 0; row < lines.length; row++) {
             for (var column = 0; column < lines[row].length(); column++) {
                 final var symbol = lines[row].charAt(column);
-                if (symbol != '.' && symbol != ' ')
-                    layout.put(positionSupplier.getPosition(row, column), new Block(symbol));
+                if (symbol != '.' && symbol != ' ') {
+                    layout.put(positionSupplier.getPosition(row, column), blockCache.blockFor(symbol));
+                }
             }
         }
 
-        return new MapBoard(width, height, layout, positionSupplier);
+        return new MapBoard(width, height, layout, positionSupplier, moveCache);
     }
 
     @Override
@@ -84,11 +86,11 @@ public class MapBoard implements Board {
 
     @Override
     public Collection<Move> getAvailableMoves() {
-        Collection<Move> moves = new HashSet<>();
+        final Collection<Move> moves = new HashSet<>();
 
-        for (var position : getOccupiedPositions()) {
-            for (var direction : DIRECTIONS) {
-                if (canPutBlockAt(position.getNeighborTo(direction))) {
+        for (final var position : getOccupiedPositions()) {
+            for (final var direction : DIRECTIONS) {
+                if (canPutBlockAt(position.getNeighborTo(direction, positionSupplier))) {
                     moves.add(new Move(position, direction));
                 }
             }
@@ -105,13 +107,13 @@ public class MapBoard implements Board {
     private Stream<Move> availableMovesStream() {
         return getOccupiedPositionsStream().flatMap(pos ->
                 DIRECTION_LIST.stream()
-                        .filter(dir -> canPutBlockAt(pos.getNeighborTo(dir)))
+                        .filter(dir -> canPutBlockAt(pos.getNeighborTo(dir, positionSupplier)))
                         .map(dir -> new Move(pos, dir)));
     }
 
     private boolean movePossible(Move move) {
         return withinBoardBounds(move.position()) && moveableBlockAt(move.position())
-               && canPutBlockAt(move.getTargetPosition());
+               && canPutBlockAt(move.getTargetPosition(positionSupplier));
     }
 
     private void doRecordedMove(Move move) {
@@ -124,7 +126,7 @@ public class MapBoard implements Board {
     }
 
     private void doMove(Move move) {
-        contents.put(move.getTargetPosition(), contents.get(move.position()));
+        contents.put(move.getTargetPosition(positionSupplier), contents.get(move.position()));
         contents.remove(move.position());
     }
 
@@ -135,19 +137,19 @@ public class MapBoard implements Board {
     }
 
     private void settleBlocks() {
-        for (var position : getOccupiedPositions()) {
+        for (final var position : getOccupiedPositions()) {
             var currentPosition = position;
 
             while (blockFallingFrom(currentPosition)) {
                 final var move = new Move(currentPosition, Down);
                 doMove(move);
-                currentPosition = move.getTargetPosition();
+                currentPosition = move.getTargetPosition(positionSupplier);
             }
         }
     }
 
     private boolean blockFallingFrom(Position position) {
-        return moveableBlockAt(position) && canPutBlockAt(position.getNeighborTo(Down));
+        return moveableBlockAt(position) && canPutBlockAt(position.getNeighborTo(Down, positionSupplier));
     }
 
     private boolean clearBlockGroups() {
@@ -155,7 +157,7 @@ public class MapBoard implements Board {
     }
 
     private boolean clearPositions(Collection<Position> positions) {
-        for (var position : positions) {
+        for (final var position : positions) {
             contents.remove(position);
         }
 
@@ -166,13 +168,13 @@ public class MapBoard implements Board {
         final var groups = new GroupContainer();
         final var directionsToLook = new Direction[]{Down, Right};
 
-        for (var position : getPositionsFromBottomUp()) {
+        for (final var position : getPositionsFromBottomUp()) {
             if (!moveableBlockAt(position)) {
                 continue;
             }
 
-            for (var direction : directionsToLook) {
-                final var neighboringPosition = position.getNeighborTo(direction);
+            for (final var direction : directionsToLook) {
+                final var neighboringPosition = position.getNeighborTo(direction, positionSupplier);
                 if (equalBlocksAt(position, neighboringPosition)) {
                     groups.addToGroup(position, groups.getGroup(neighboringPosition));
                 }
@@ -274,22 +276,22 @@ public class MapBoard implements Board {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this)
+        if (o == this) {
             return true;
-        else if (!(o instanceof Board))
+        } else if (!(o instanceof Board other)) {
             return false;
-        else {
-            var other = (Board) o;
-
-            if (getWidth() != other.getWidth() || getHeight() != other.getHeight())
+        } else {
+            if (getWidth() != other.getWidth() || getHeight() != other.getHeight()) {
                 return false;
+            }
 
-            for (var position : positions()) {
-                var thisBlock = getBlockAt(position);
-                var thatBlock = other.getBlockAt(position);
+            for (final var position : positions()) {
+                final var thisBlock = getBlockAt(position);
+                final var thatBlock = other.getBlockAt(position);
 
-                if (!java.util.Objects.equals(thisBlock, thatBlock))
+                if (!Objects.equals(thisBlock, thatBlock)) {
                     return false;
+                }
             }
 
             return true;
@@ -298,14 +300,14 @@ public class MapBoard implements Board {
 
     @Override
     public int hashCode() {
-        var factor = 31;
+        final var factor = 31;
         var hashCode = 17;
         hashCode = factor * hashCode + width;
         hashCode = factor * hashCode + height;
 
-        for (var position : getOccupiedPositions()) {
-            var block = getBlockAt(position);
-            hashCode = factor * hashCode + java.util.Objects.hash(block);
+        for (final var position : getOccupiedPositions()) {
+            final var block = getBlockAt(position);
+            hashCode = factor * hashCode + Objects.hash(block);
         }
 
         return hashCode;
@@ -313,10 +315,10 @@ public class MapBoard implements Board {
 
     @Override
     public String toString() {
-        var builder = new StringBuilder();
+        final var builder = new StringBuilder();
 
-        for (var position : positions()) {
-            var block = getBlockAt(position);
+        for (final var position : positions()) {
+            final var block = getBlockAt(position);
             builder.append(block == null ? "." : block.symbol());
 
             if (position.column() == width - 1)
@@ -356,9 +358,9 @@ public class MapBoard implements Board {
         }
 
         Collection<Position> getMembersOfNonSingletonGroups() {
-            Collection<Position> positions = new HashSet<>();
+            final Collection<Position> positions = new HashSet<>();
 
-            for (var group : _groupsMappedToPositions.values())
+            for (final var group : _groupsMappedToPositions.values())
                 if (group.size() > 1)
                     positions.addAll(group);
 
@@ -366,44 +368,36 @@ public class MapBoard implements Board {
         }
     }
 
-    private static class PositionSequence implements Iterable<Position> {
-        private final int width;
-        private final int height;
-        private final PositionSupplier positionSupplier;
-
-        PositionSequence(int width, int height, PositionSupplier positionSupplier) {
-            this.width = width;
-            this.height = height;
-            this.positionSupplier = positionSupplier;
-        }
+    private record PositionSequence(int width, int height, PositionSupplier positionSupplier)
+            implements Iterable<Position> {
 
         public Iterator<Position> iterator() {
-            return new Iterator<>() {
-                int row;
-                int column;
+                return new Iterator<>() {
+                    int row;
+                    int column;
 
-                public Position next() {
-                    final var position = positionSupplier.getPosition(row, column);
+                    public Position next() {
+                        final var position = positionSupplier.getPosition(row, column);
 
-                    if (column == width - 1) {
-                        column = 0;
-                        row++;
-                    } else {
-                        column++;
+                        if (column == width - 1) {
+                            column = 0;
+                            row++;
+                        } else {
+                            column++;
+                        }
+
+                        return position;
                     }
 
-                    return position;
-                }
+                    public boolean hasNext() {
+                        return row < height && column < width;
+                    }
 
-                public boolean hasNext() {
-                    return row < height && column < width;
-                }
-
-                public void remove() {
-                }
-            };
+                    public void remove() {
+                    }
+                };
+            }
         }
-    }
 
     static class Builder {
         private final StringBuilder layoutBuilder = new StringBuilder();
@@ -435,9 +429,9 @@ public class MapBoard implements Board {
                 addWall();
         }
 
-        MapBoard build(PositionSupplier positionSupplier) {
+        MapBoard build(PositionSupplier positionSupplier, BlockCache blockCache, MoveCache moveCache) {
             addBottomWall();
-            return MapBoard.fromString(layoutBuilder.toString(), positionSupplier);
+            return MapBoard.fromString(layoutBuilder.toString(), positionSupplier, blockCache, moveCache);
         }
     }
 }

@@ -8,18 +8,18 @@ import static org.junit.Assert.assertTrue;
 public class BlockTest {
 
     @Test
-    public void testIsWall() {
-        assertTrue(new Block(Block.WALL_SYMBOL).isWall());
+    public void isWall() {
+        assertTrue(Block.wall().isWall());
     }
 
     @Test
-    public void testSameSymbolsImplyEqualBlocks() {
+    public void sameSymbolsImplyEqualBlocks() {
         final var symbol = 'A';
         assertEquals(new Block(symbol), new Block(symbol));
     }
 
     @Test
-    public void testEqualBlocksHaveEqualHashCodes() {
+    public void equalBlocksHaveEqualHashCodes() {
         final var symbol = 'A';
         assertEquals(new Block(symbol).hashCode(), new Block(symbol).hashCode());
     }

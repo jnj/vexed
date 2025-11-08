@@ -5,20 +5,19 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class ConcurrentSolver implements Solver {
-
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private final Queue<Collection<Board>> queue = new LinkedBlockingQueue<>();
     private final Set<Board> seenBoards = Collections.synchronizedSet(new HashSet<>());
 
     @Override
     public Solution solve(Board rootBoard) throws UnsolveableBoardException {
-        queue.add(Collections.singleton(rootBoard));
+        queue.add(List.of(rootBoard));
 
         while (!queue.isEmpty()) {
             final var explorationLevel = queue.poll();
-            Collection<Future<Collection<Board>>> futures = new ArrayList<>();
+            final var futures = new ArrayList<Future<Collection<Board>>>();
 
-            for (var board : explorationLevel) {
+            for (final var board : explorationLevel) {
                 if (board.isSolved()) {
                     executorService.shutdownNow();
                     return new Solution(board.getMoveHistory(), seenBoards.size());
@@ -43,12 +42,12 @@ public class ConcurrentSolver implements Solver {
 
     private Collection<Board> mergeResultingBoards(Collection<Future<Collection<Board>>> futures) {
         // merge results
-        Collection<Board> nextLevel = new ArrayList<>();
+        final Collection<Board> nextLevel = new ArrayList<>();
 
-        for (var future : futures) {
+        for (final var future : futures) {
             try {
                 nextLevel.addAll(future.get());
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (final InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -59,12 +58,7 @@ public class ConcurrentSolver implements Solver {
     /**
      * Gets all possible moves from one board, applies them
      */
-    private static class BoardExploreTask implements Callable<Collection<Board>> {
-        private final Board parentBoard;
-
-        private BoardExploreTask(Board parentBoard) {
-            this.parentBoard = parentBoard;
-        }
+    private record BoardExploreTask(Board parentBoard) implements Callable<Collection<Board>> {
 
         @Override
         public Collection<Board> call() {

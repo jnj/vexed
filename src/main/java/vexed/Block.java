@@ -1,10 +1,11 @@
 package vexed;
 
 public record Block(char symbol) {
-    static final char WALL_SYMBOL = '#';
+    public static final char WALL_SYMBOL = '#';
+    public static final Block WALL = new Block(WALL_SYMBOL);
 
     static Block wall() {
-        return new Block(WALL_SYMBOL);
+        return WALL;
     }
 
     boolean isWall() {
